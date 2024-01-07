@@ -788,7 +788,6 @@ void main(){
     await Future.delayed(Duration(seconds: 2));
   });
 
-
 }
 COPIAR CÓDIGO
 Após salvar as alterações, vamos rodar o teste novamente e acompanhá-lo no emulador.
@@ -841,3 +840,655 @@ Implementar testes de widget:
 Relembramos os conceitos de teste de Widget e criamos um teste para verificar um dos Widgets customizados do projeto que nos foi entregue, o hamburguer_menu.dart.
 Aplicar testes de integração:
 Aprendemos um novo conceito e produzimos um teste de integração, capaz de verificar a dependência entre dois elementos distintos e ainda visualizar a ação ocorrendo em tempo real através do nosso emulador!
+
+#### 07/01/2023
+
+@02-Implementando testes de ponta a ponta
+
+@@01
+Projeto da aula anterior
+PRÓXIMA ATIVIDADE
+
+Você pode ir acompanhando o passo a passo do desenvolvimento do nosso projeto e, caso deseje, pode baixar o projeto da aula anterior.
+Bons estudos!
+
+@@02
+Criando teste manual
+
+Já criamos o nosso primeiro teste de integração, porém ele está bastante simples. A ideia agora é analisarmos o que precisamos testar no aplicativo do início ao fim (de uma ponta até a outra ponta).
+Para isso, faremos um teste manual listando passo a passo cada uma das ações. Com isso, vamos testando todas essas ações conforme for listado.
+
+O que precisamos testar?
+Tela inicial (tela de clientes)
+Verificar se o drawer está completo
+Testar a navegação
+Verificar a tela "Tipos de clientes"
+Criar um novo tipo de cliente
+Criar um novo cliente com o novo tipo
+Verificar o que não é necessário testar
+Vamos testar a tela inicial, para verificarmos se ela realmente com os elementos detalhados, como se os ícones de menu e do floating action button estão clicáveis. Depois vamos clicar no ícone de menu para verificar se drawer está completo, analisando se está com todas as informações (Gerenciar clientes, Tipos de clientes e Sair).
+
+Logo após, iniciamos os testes de navegação. Será que ao clicarmos em "Gerenciar clientes" do menu do aplicativo, seremos redirecionados para a tela de clientes? Precisamos verificar essa navegação!
+
+Se voltarmos no drawer (ícone do menu) e clicarmos em "Tipos de clientes", ele vai para essa tela de clientes mesmo? Se a navegação estiver funcionando, passamos para o próximo teste.
+
+O próximo passo é justamente a tela "Tipos de clientes". Estamos com todos os elementos? Esses elementos estão funcionando? Temos os tipos de clientes? Temos o ícone de menu e o floating action button? Em tipos de clientes, precisamos ter:
+
+Tipos de clientes
+Platinum
+Golden
+Titanium
+Diamond
+Após verificarmos e concluirmos que está tudo certo, o próximo teste é criar no floating action button e criar um novo tipo de cliente.
+
+Após clicarmos no floating action button da página "Tipos de clientes", será exibido uma janela solicitando um nome, escrevemos "Ferro". Depois clicamos em "Selecionar ícone" e escolhemos o gift card.
+
+Tipos de clientes
+Platinum
+Golden
+Titanium
+Diamond
+Ferro
+Ao clicarmos no botão "Salvar" para adicionarmos um novo tipo, ele é exibido na nossa tela "Tipos de clientes"? Se sim, passamos para o próximo passo.
+
+Será que conseguimos criar um cliente com esse novo tipo? Vamos precisar navegar para a tela "Gerenciar clientes" (através do drawer) e na tela de clientes clicamos no floating action button no canto inferior direito e, desta vez, cadastrar um novo cliente.
+
+Ao clicarmos, será exibida uma tela intitulada "Cadastrar cliente" com os campos "Nome" e "Email", com outro campo para selecionarmos o tipo de cliente. Abaixo e mais à direita, os botões "Salvar" e "Cancelar". Em "Tipo" observe que já consta o novo tipo que acabamos de criar!
+
+Preencheremos:
+
+Cadastrar cliente
+Nome: Kako
+Email: kako@alura.com
+Ferro
+Ou seja, estamos integrando o tipo com o cliente. Logo após, clicamos em "Salvar". Observe que na página "Clientes" agora temos o "Kako(Ferro)" listado.
+
+Com isso, falta testarmos apenas mais alguns detalhes, como o botão de "Sair". Para sair, clicamos no ícone de menu no canto superior esquerdo e depois em "Sair". Pronto!
+
+O instrutor logará novamente no aplicativo para seguir com a lista de testes.
+Até o momento foram listados sete passos, faltou verificarmos quais testes não vamos precisar realizar. Precisamos garantir o que não é tão importante assim, como testar se o ícone no floating action button é o ícone de mais. Será que precisamos testar se a cor ao clicarmos no drawer é azul? Precisamos testar se a tipagem e o tamanho da fonte são as especificadas?
+
+É fundamental entendermos qual o nosso trabalho, por questão de demanda e tempo. Precisamos listar o que faremos e o que não faremos.
+
+Neste curso, vamos testar as coisas básicas do funcionamento do nosso aplicativo. Assim, ajudaremos a Dandara a produzir todos os testes para ela entregar para o cliente, garantindo a qualidade do conteúdo do projeto. Não tudo o que contém no projeto, somente o funcionamento e o que pode dificultar a navegação da pessoa usuária do aplicativo.
+
+Com a nossa lista de testes montada, vamos iniciar o nosso projeto.
+
+Vamos lá?
+
+@@03
+Verificando navegação
+
+Já sabemos o que precisamos fazer, então vamos lá!
+O primeiro passo é verificarmos se ao abrirmos o aplicativo a nossa tela inicial de clientes contém o título, o ícone de menu e o floating action button.
+
+Tela inicial de aplicativo. Na parte superior da tela temos a app bar na cor azul com o título "Clientes" escrito em branco e alinhado à esquerda temos o ícone de menu. Abaixo da app bar temos uma tela em branco. No canto inferior direito, temos um botão flutuante redondo e azul com um "+" escrito em branco dentro dele.
+
+Então voltando ao nosso teste de integração, vamos buscar por esses elementos no teste automatizado.
+
+No projeto, vamos em "integration_test > app_test", sendo onde temos os testes de integração.
+
+app_test.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+import 'package:client_control/main.dart' as app;
+void main(){
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('Integration Test', (tester) async{
+    app.main();
+    await tester.pumpAndSettle();
+    expect(find.text('Menu'), findsNothing);
+    await Future.delayed(Duration(seconds: 2));
+    await tester.tap(find.byIcon(Icons.menu));
+    await Future.delayed(Duration(seconds: 2));
+    await tester.pumpAndSettle();
+    expect(find.text('Menu'), findsOneWidget);
+    await Future.delayed(Duration(seconds: 2));
+  });
+
+
+}COPIAR CÓDIGO
+Faremos algumas alterações. Nas linhas 14, 16 e 19 podemos remover o future delayed, nós o colocamos para conseguirmos visualizar o teste de integração (que foi tão rápido que não conseguimos acompanhar).
+
+Por enquanto o nosso arquivo ficará:
+
+app_test.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+import 'package:client_control/main.dart' as app;
+void main(){
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('Integration Test', (tester) async{
+    app.main();
+    await tester.pumpAndSettle();
+    expect(find.text('Menu'), findsNothing);
+
+    await tester.tap(find.byIcon(Icons.menu));
+
+    await tester.pumpAndSettle();
+    expect(find.text('Menu'), findsOneWidget);
+  });
+
+}COPIAR CÓDIGO
+O nosso teste verificava se havia um menu da tela inicial, e não tinha. Depois clicava no ícone do menu e logo após se existia o texto "Menu". Era isso que ele fazia, e não é isso que desejamos agora.
+
+Vamos verificar se ao invés de "Menu" existe o texto "Clientes". Por isso, em "find.text('')" digitamos "Clientes". E ele espera um matcher chamado "findsOneWidget".
+
+app_test.dart
+//código omitido
+
+void main(){
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('Integration Test', (tester) async{
+    app.main();
+    await tester.pumpAndSettle();
+    expect(find.text('Clientes'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.menu));
+
+    await tester.pumpAndSettle();
+    expect(find.text('Menu'), findsOneWidget);
+  });
+
+}COPIAR CÓDIGO
+Com isso, verificamos se existe o título "Clientes".
+
+Agora vamos copiar (Ctrl + C) a linha 13 e colar (Ctrl + V) nas duas linhas seguintes:
+
+app_test.dart
+    expect(find.text('Clientes'), findsOneWidget);
+        expect(find.text('Clientes'), findsOneWidget);
+        expect(find.text('Clientes'), findsOneWidget);COPIAR CÓDIGO
+Fizemos isso porque desejamos procurar por mais elementos. O outro elemento que queremos buscar não é um texto, e sim um ícone. Por isso, ao invés de "find.text" usaremos "find.byIcon()" passando "Icons.menu".
+
+app_test.dart
+//código omitido
+
+void main(){
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('Integration Test', (tester) async{
+    app.main();
+    await tester.pumpAndSettle();
+    expect(find.text('Clientes'), findsOneWidget);
+    expect(find.byIcon(Icons.menu), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.menu));
+
+    await tester.pumpAndSettle();
+    expect(find.text('Menu'), findsOneWidget);
+  });
+
+}COPIAR CÓDIGO
+Por fim, buscaremos pelo floating action button. Por isso, vamos utilizar "find.byType()" passando o tipo floating action button.
+
+app_test.dart
+//código omitido
+
+void main(){
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('Integration Test', (tester) async{
+    app.main();
+    await tester.pumpAndSettle();
+    expect(find.text('Clientes'), findsOneWidget);
+    expect(find.byType(FloatingActionButton), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.menu));
+
+    await tester.pumpAndSettle();
+    expect(find.text('Menu'), findsOneWidget);
+  });
+
+}COPIAR CÓDIGO
+Concluímos o nosso primeiro passo de testar a tela inicial (buscar por clientes, menu e o floating action button).
+
+O que precisamos testar?
+Tela inicial (tela de clientes) ✔
+Verificar se o drawer está completo
+Testar a navegação
+Verificar a tela "Tipos de cliente"
+Criar um novo tipo de cliente
+Criar um novo cliente com o novo tipo
+Verificar o que não é necessário testar
+Agora o nosso próximo passo é verificarmos se quando clicarmos no ícone de menu o drawer é aberto com todos os elementos. Clicando no ícone menu do lado superior esquerdo do aplicativo, temos:
+
+Gerenciar clientes
+Tipos de clientes
+Sair
+Tela de Menu. Abaixo do cabeçalho com o título "Menu", dentro do drawer, temos uma lista de opções, sendo elas as telas Gerenciar clientes e Tipos de cliente e o botão "Sair". No canto inferior direito, temos o botão "+" que continua visível abaixo da camada do menu de drawer.
+
+É isso que vamos verificar!
+
+Voltando ao código, no arquivo "app_test", até o momento temos:
+
+app_test.dart
+//código omitido
+
+    await tester.tap(find.byIcon(Icons.menu));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Menu'), findsOneWidget);
+  });
+
+}COPIAR CÓDIGO
+Ele deu um tap no nosso ícone de menu, esperou carregar e agora ele está esperando encontrar o texto "Menu". Quais os outros textos que desejamos analisar? "Gerenciar clientes", "Tipo de clientes" e "Sair". É por isso que vamos buscar também.
+
+Com esse fim, vamos copiar a linha que contém o "expect()" inteira e colar nas três linhas seguintes.
+
+app_test.dart
+//código omitido
+
+    await tester.tap(find.byIcon(Icons.menu));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Menu'), findsOneWidget);
+        expect(find.text('Menu'), findsOneWidget);
+        expect(find.text('Menu'), findsOneWidget);
+        expect(find.text('Menu'), findsOneWidget);
+  });
+
+}COPIAR CÓDIGO
+Vamos substituir dentro do parêntese pelos textos que desejamos procurar. No caso será "Gerenciar clientes", "Tipos de clientes" e "Sair".
+
+app_test.dart
+//código omitido
+
+    await tester.tap(find.byIcon(Icons.menu));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Menu'), findsOneWidget);
+    expect(find.text('Gerenciar clientes'), findsOneWidget);
+    expect(find.text('Tipos de clientes'), findsOneWidget);
+    expect(find.text('Sair'), findsOneWidget);
+  });
+
+}COPIAR CÓDIGO
+Pronto, testamos o drawer. Para não nos perdermos, vamos inserir os passos no nosso teste, por exemplo, na linha 13 deixaremos um comentário informando que estamos testando tela inicial.
+
+//código omitido
+
+await tester.pumpAndSettle();
+//Testando tela inicial
+
+//código omitidoCOPIAR CÓDIGO
+Logo após, na linha 17 (antes do tester.tap) escrevemos "// Testando o Drawer".
+
+app_test.dart
+//código omitido
+
+  testWidgets('Integration Test', (tester) async{
+    app.main();
+    await tester.pumpAndSettle();
+        //Testando tela inicial
+    expect(find.text('Clientes'), findsOneWidget);
+    expect(find.byIcon(Icons.menu), findsOneWidget);
+    expect(find.byType(FloatingActionButton), findsOneWidget);
+
+    // Testando o Drawer
+    await tester.tap(find.byIcon(Icons.menu));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Menu'), findsOneWidget);
+    expect(find.text('Gerenciar clientes'), findsOneWidget);
+    expect(find.text('Tipos de clientes'), findsOneWidget);
+    expect(find.text('Sair'), findsOneWidget);
+  });
+
+}COPIAR CÓDIGO
+O que precisamos testar?
+Tela inicial (tela de clientes) ✔
+Verificar se o drawer está completo ✔
+Testar a navegação
+Verificar a tela "Tipos de cliente"
+Criar um novo tipo de cliente
+Criar um novo cliente com o novo tipo
+Verificar o que não é necessário testar
+Testamos o drawer, qual o próximo passo? Precisamos testar a navegação e a tela "Tipos de clientes". Acrescentaremos um comentário depois da última linha escrito "//Testar a Navegação e a Tela de Tipos".
+
+app_test.dart
+//código omitido
+
+    expect(find.text('Menu'), findsOneWidget);
+    expect(find.text('Gerenciar clientes'), findsOneWidget);
+    expect(find.text('Tipos de clientes'), findsOneWidget);
+    expect(find.text('Sair'), findsOneWidget);
+
+            //Testar a Navegação e a Tela de Tipos
+  });
+
+}COPIAR CÓDIGO
+Voltando para o aplicativo, vamos clicar em "Tipos de clientes". Observe que somos redirecionados para uma nova tela, e com isso verificamos se essa alteração de tela (navegação) foi feita com qualidade e se fomos para a tela esperada.
+
+Tela de Tipos de cliente. À esquerda do cabeçalho temos o ícone de Menu e abaixo temos uma lista de opções dos tipos categorizados, sendo elas: Platinum, Golden, Titanium e Diamond. No canto inferior direito, temos o botão "+".
+
+Voltando ao código, após o comentário, escrevemos "await tester.tap();". Como temos que clicar nos tipos de clientes, dentro do parêntese vamos colocar "find.text()" passando "Tipos de clientes".
+
+app_test.dart
+//código omitido
+
+    //Testar a Navegação e a Tela de Tipos
+    await tester.tap(find.text('Tipos de clientes'));
+  });
+
+}COPIAR CÓDIGO
+Após clicar, agora precisamos aguardar. Para isso, usamos o "tester.pumpAndSettle()" (espera carregar as telas e os microprocessos).
+
+app_test.dart
+//código omitido
+
+    //Testar a Navegação e a Tela de Tipos
+    await tester.tap(find.text('Tipos de clientes'));
+    await tester.pumpAndSettle();
+  });
+
+}COPIAR CÓDIGO
+Após clicar e esperar, verificamos se os elementos estão todos sendo exibidos na tela. Analisando na tela, precisamos buscar pelos seguintes textos, ícone e botão para verificarmos:
+
+Tipos de cliente (texto)
+Platinum (texto)
+Golden (texto)
+Titanium (texto)
+Diamond (texto)
+FloatingActionButton (botão)
+Icons.menu (ícone)
+Para buscar por esses elementos, usaremos o expect().
+
+app_test.dart
+//código omitido
+
+    //Testar a Navegação e a Tela de Tipos
+    await tester.tap(find.text('Tipos de clientes'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tipos de cliente'), findsOneWidget);
+    expect(find.byType(FloatingActionButton), findsOneWidget);
+    expect(find.byIcon(Icons.menu), findsOneWidget);
+    expect(find.text('Platinum'), findsOneWidget);
+    expect(find.text('Golden'), findsOneWidget);
+    expect(find.text('Titanium'), findsOneWidget);
+    expect(find.text('Diamond'), findsOneWidget);
+  });
+
+}COPIAR CÓDIGO
+Observe que no drawer o texto que buscamos é Tipos de clientes e na tela propriamente dita o título é Tipos de cliente.
+Após procurarmos por todos esses elementos no teste, agora rodaremos para verificar se ele está buscando e encontrando esses textos, ícone e botão.
+
+Clicamos no botão "▶", na linha 7 ou usamos o atalho "Ctrl + Shift + F10".
+
+Como retorno no terminal, temos:
+
+Built build\app\outputs\flutter-apk\app-debug.apk.
+Installing build\app\outputs\flutter-apk\app.apk…
+
+Testou, encontrou, passou! É muito rápido, né? Mas essa é a ideia do teste automatizado (rápido e eficiente). Até o momento, testamos:
+
+O que precisamos testar?
+Tela inicial (tela de clientes) ✔
+Verificar se o drawer está completo ✔
+Testar a navegação ✔
+Verificar a tela "Tipos de cliente" ✔
+Criar um novo tipo de cliente
+Criar um novo cliente com o novo tipo
+Verificar o que não é necessário testar
+Na sequência, vamos criar um novo tipo de cliente. Te espero lá!
+
+@@04
+Criando um novo tipo
+
+O que precisamos testar?
+Tela inicial (tela de clientes) ✔
+Verificar se o drawer está completo ✔
+Testar a navegação ✔
+Verificar a tela "Tipos de cliente" ✔
+Criar um novo tipo de cliente
+Criar um novo cliente com o novo tipo
+Verificar o que não é necessário testar
+Agora daremos o próximo passo no nosso na criação do teste de automatização: criar um novo tipo de cliente e verificar se essa criação foi bem-sucedida.
+
+Para isso, vamos ao emulador do aplicativo clicar no botão "+" no canto inferior direito da tela de Tipos de cliente. Precisamos verificar se ao clicarmos no floating action button o nosso AlertDialog é aberto e se ao preenchermos o campo "Nome", selecionarmos um ícone e depois o botão "Salvar" será armazenado e exibido esse novo tipo na tela.
+
+Tela com o alert dialog de cadastrar tipo aberto. No cabeçalho temos "Cadastrar tipo", e abaixo um text form field chamado "Nome". Logo após, há um botão "Selecionar ícone" e no canto inferior direito temos os botões "Salvar" e "Cancelar". Ao fundo, temos a tela "Tipos de cliente" que continua visível abaixo do nosso alert dialog.
+
+Tela de Tipos de cliente. À esquerda do cabeçalho temos o ícone de Menu e abaixo temos uma lista de opções dos tipos categorizados, sendo elas: Platinum, Golden, Titanium e Diamond. No canto inferior direito, temos o botão "+".
+
+Voltando ao código, após testarmos se a tela "Tipos de cliente" está completa, na linha seguinte adicionamos mais um comentário "Testar a criação de um Tipo de Cliente".
+
+app_test.dart
+//código omitido
+
+    expect(find.text('Golden'), findsOneWidget);
+    expect(find.text('Titanium'), findsOneWidget);
+    expect(find.text('Diamond'), findsOneWidget);
+
+        // Testar a criação de um Tipo de Cliente
+  });
+
+}COPIAR CÓDIGO
+A primeira etapa é buscar e tocar (tap) no floating action button, para isso usamos o await tester.tap(find.byType()) buscando pelo floating action button.
+
+app_test.dart
+// código omitido
+
+    // Testar a criação de um Tipo de Cliente
+
+    await tester.tap(find.byType(FloatingActionButton));
+
+  });
+
+
+}COPIAR CÓDIGO
+Com isso, encontramos e tocamos no nosso botão. Após tocar, aguardamos (toda vez que fizermos uma ação que navega e builda uma nova tela, precisamos esperar), para tal usamos o tester.pumpAndSettle().
+
+app_test.dart
+// código omitido
+
+    // Testar a criação de um Tipo de Cliente
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+
+  });
+
+
+}COPIAR CÓDIGO
+O ideal é que ao clicarmos no floating action button consigamos acessar o nosso alert dialog. Por isso, o nosso próximo passo é usarmos o expect() para procurar pelo alert dialog (como há somente um alertdialog usamos findsOneWidget).
+
+app_test.dart
+// código omitido
+
+    // Testar a criação de um Tipo de Cliente
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsOneWidget);
+
+  });
+
+
+}COPIAR CÓDIGO
+O que temos dentro do alert dialog? Temos um input de texto (campo nome), um botão para selecionar o ícone, salvar e cancelar. A nossa primeira solicitação será pedir para o nosso robô escrever no campo "Nome" a palavra "Ferro", ou seja, criaremos um tipo de cliente chamado "Ferro".
+
+Como solicitamos ao nosso tester que ele escreva? Usamos o método "enterText()" (procura um local para inserir um texto solicitado). Ele precisa procurar pelo TextFormField (lembrando que é classe e não o objeto), usando o find by type().
+
+Como sabemos se é um Text Form Field ou um Text Field? Analisando no nosso código original (de quem nos enviou), verificamos se é um text form field e não um text field. Após encontrarmos esse text form field acrescentamos o texto "Ferro", sendo o que desejamos encontrar.
+
+app_test.dart
+// código omitido
+
+    // Testar a criação de um Tipo de Cliente
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsOneWidget);
+    await tester.enterText(find.byType(TextFormField), 'Ferro');
+
+  });
+
+
+}COPIAR CÓDIGO
+Essa é a nossa nova função para adicionar textos no text form field, ou no que quisermos adicionar textos. Agora vamos buscar e tocar no nosso botão "Selecionar ícones" (aplicamos a mesma lógica que utilizamos anteriormente).
+
+Após usarmos o tap para abrir o "Selecionar ícone", solicitamos ao nosso tester que aguarde todos os microprocessos utilizando "tester.pumpAndSettle()". Não podemos esquecer de carregar!
+
+app_test.dart
+// código omitido
+
+    // Testar a criação de um Tipo de Cliente
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsOneWidget);
+    await tester.enterText(find.byType(TextFormField), 'Ferro');
+
+    await tester.tap(find.text('Selecionar icone'));
+    await tester.pumpAndSettle();
+
+  });
+
+
+}COPIAR CÓDIGO
+Após carregar tudo, selecionamos o ícone de presente (giftcard) (primeiro da esquerda para a direita). Observe que basta clicar no ícone que ele já abre e é exibido no alert dialog, abaixo do campo "Nome".
+
+Aplicamos a mesma lógica do "Selecionar ícone" no gift card (clicar (tap) e aguardar o carregamento dos microprocessos). Porém, não será em um texto e sim em um ícone, portanto utilizamos o "find.byIcon()" passando o "Icons.card_giftcard".
+
+app_test.dart
+// código omitido
+
+    // Testar a criação de um Tipo de Cliente
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsOneWidget);
+    await tester.enterText(find.byType(TextFormField), 'Ferro');
+
+    await tester.tap(find.text('Selecionar icone'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.card_giftcard));
+    await tester.pumpAndSettle();
+
+  });
+
+
+}COPIAR CÓDIGO
+Após isso, clicamos no botão "Salvar" (que é um texto) e aguardamos (para verificar se o nosso novo tipo carregou na tela). Após clicarmos no botão "Salvar", buscamos pelo texto "Ferro" e pelo ícone "gift card" usando o expect().
+
+app_test.dart
+// código omitido
+
+    // Testar a criação de um Tipo de Cliente
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsOneWidget);
+    await tester.enterText(find.byType(TextFormField), 'Ferro');
+
+    await tester.tap(find.text('Selecionar icone'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.card_giftcard));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Salvar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Ferro'), findsOneWidget);
+    expect(find.byIcon(Icons.card_giftcard), findsOneWidget);
+
+  });
+
+
+}COPIAR CÓDIGO
+Vamos testar para analisar se o nosso teste de integração está encontrando tudo que solicitamos. Para isso, clicamos no botão "▶" na cor verde do lado esquerdo da linha 7 (void main()) ou usamos o atalho "Ctrl + Shift + F10".
+
+Na tela do emulador temos a mensagem "Test starting…", e observe que as telas são trocadas de forma bem rápida (nem conseguimos acompanhar direito). Clicou, criou o tipo "Ferro" e achou o texto! Isso significa que deu certo, foi em torno de 5 segundos de teste.
+
+O que precisamos testar?
+Tela inicial (tela de clientes) ✔
+Verificar se o drawer está completo ✔
+Testar a navegação ✔
+Verificar a tela "Tipos de cliente" ✔
+Criar um novo tipo de cliente ✔
+Criar um novo cliente com o novo tipo
+Verificar o que não é necessário testar
+Na sequência, vamos verificar se há a possibilidade de criar um novo cliente com um novo tipo (no caso, ferro). Vamos lá?
+
+Arquivo "app_test.dart" no GitHub
+
+https://github.com/alura-cursos/alura_flutter_intermediario_curso_1/blob/Aula_2/integration_test/app_test.dart#L40
+
+@@05
+Entrada de texto
+PRÓXIMA ATIVIDADE
+
+Nesta aula, acompanhamos a evolução da Dandara no freela (trabalho autônomo) recebido por ela!
+Assim, implementamos testes de ponta a ponta mais detalhados e iniciamos a criação de um novo tipo de cliente. Por último, vimos uma nova função do tester: a enterText() !
+
+Vamos revisar? Assinale as alternativas verdadeiras:
+
+O tester é o “robôzinho” que realiza ações durante o teste automatizado, a função enterText() precisa de um finder que procura o widget que recebe um texto e precisa de um segundo parâmetro que é o texto a ser inserido.
+ 
+Perfeito, é um código simples, mas poderoso, para realizar ações durante o teste que necessitam da interação com formulários!
+Alternativa correta
+O enterText() é apenas mais um finder que tem como principal função localizar um widget que permite a entrada de um texto.
+ 
+Alternativa correta
+O tester utiliza do tap() para interagir com qualquer widget no teste e, ao interagir com o widget, ele pode inserir um texto utilizando o enterText().
+ 
+Alternativa correta
+O enterText() é um matcher responsável por comparar o texto com o que existe na tela!
+
+@@06
+Faça como eu fiz
+PRÓXIMA ATIVIDADE
+
+Iniciamos nossa jornada de construção de um teste de ponta a ponta, capaz de avaliar não só os widgets e telas, como também a integração entre os elementos do código e suas relações.
+Agora é sua vez de reproduzir o que vimos em aula!
+
+Assim, recomendamos que você siga os passos abaixo:
+
+Liste todos os passos necessários para interagir com o aplicativo do inicio ao fim;
+Lembre-se de verificar quais passos você deixou de testar e porque ao terminar de listá-los;
+Comece a codar! Crie os testes na ordem em que você listou.
+Dica: é importante que você utilize async e await.
+
+O objetivo desta atividade é permitir que você pratique e veja se compreendeu bem a técnica abordada durante a videoaula.
+Se quiser, pode consultar o commit desta implementação no GitHub.
+
+Se tiver dúvidas, acione a gente lá no fórum ou discord!
+
+Bons estudos!
+
+https://github.com/alura-cursos/alura_flutter_intermediario_curso_1/commit/76ad1d90d76f81d6f3e0935e5237d9e1ad4d2d59
+
+@@07
+Para saber mais: Firebase Test
+PRÓXIMA ATIVIDADE
+
+Agora que já começamos a produzir nossos testes de integração, chegou a hora de explorarmos ferramentas externas muito usadas no mercado para facilitar os testes em diversos dispositivos!
+O Firebase Test Lab é uma ferramenta que permite produzir e monitorar diversos testes em diferentes tipos de emuladores, para garantir que seu aplicativo vai funcionar com qualidade em diferentes celulares!
+
+Para ajudar a matar sua curiosidade, separei um artigo externo, em inglês do Matt Rešetár que indica passo a passo como implementar testes usando o Firebase!
+
+https://firebase.google.com/docs/test-lab
+
+https://resocoder.com/2021/01/02/flutter-integration-test-tutorial-firebase-test-lab-codemagic/
+
+@@08
+O que aprendemos?
+PRÓXIMA ATIVIDADE
+
+Nesta aula, você aprendeu como:
+Produzir um teste Manual:
+Vimos que o primeiro passo para produzir um teste automatizado de ponta a ponta é fazer um teste manual (na mão mesmo!) e verificar quais são os passos detalhados para percorrer o aplicativo de uma ponta a outra.
+Identificar os pontos necessários de testes:
+Ao produzir o teste manualmente, verificamos que existem pontos importantes a ser testados (navegação, inserção de textos em formulários), assim como detalhes que não precisam da nossa atenção (a cor do menu lateral, por exemplo). Com esse senso crítico, podemos identificar e selecionar quais os passos a seguir para produzir o teste automatizado.
+Testar a Navegação entre telas:
+Na nossa lista, nossos passos iniciais estavam em navegar entre telas no aplicativo! Por isso, ensinamos ao nosso tester como verificar se a navegação está sendo realizada com maestria, uma vez que, ao clicar no botão que redireciona a tela, os novos elementos (informações da nova tela) aparecerão.
+Utilizar o enterText() para adicionar um texto a um widget:
+Durante nossa jornada, nos deparamos com uma situação inédita: a necessidade de inserir texto em um TextFormField para dar continuidade ao nosso teste. Essa necessidade foi sanada com a utilização de um novo método presente no tester : o enterText() que necessita de duas coisas: 1) um finder; e 2) do texto que será inserido no widget encontrado.
