@@ -847,7 +847,6 @@ Aprendemos um novo conceito e produzimos um teste de integração, capaz de veri
 
 @@01
 Projeto da aula anterior
-PRÓXIMA ATIVIDADE
 
 Você pode ir acompanhando o passo a passo do desenvolvimento do nosso projeto e, caso deseje, pode baixar o projeto da aula anterior.
 Bons estudos!
@@ -1424,7 +1423,6 @@ https://github.com/alura-cursos/alura_flutter_intermediario_curso_1/blob/Aula_2/
 
 @@05
 Entrada de texto
-PRÓXIMA ATIVIDADE
 
 Nesta aula, acompanhamos a evolução da Dandara no freela (trabalho autônomo) recebido por ela!
 Assim, implementamos testes de ponta a ponta mais detalhados e iniciamos a criação de um novo tipo de cliente. Por último, vimos uma nova função do tester: a enterText() !
@@ -1445,7 +1443,6 @@ O enterText() é um matcher responsável por comparar o texto com o que existe n
 
 @@06
 Faça como eu fiz
-PRÓXIMA ATIVIDADE
 
 Iniciamos nossa jornada de construção de um teste de ponta a ponta, capaz de avaliar não só os widgets e telas, como também a integração entre os elementos do código e suas relações.
 Agora é sua vez de reproduzir o que vimos em aula!
@@ -1468,7 +1465,6 @@ https://github.com/alura-cursos/alura_flutter_intermediario_curso_1/commit/76ad1
 
 @@07
 Para saber mais: Firebase Test
-PRÓXIMA ATIVIDADE
 
 Agora que já começamos a produzir nossos testes de integração, chegou a hora de explorarmos ferramentas externas muito usadas no mercado para facilitar os testes em diversos dispositivos!
 O Firebase Test Lab é uma ferramenta que permite produzir e monitorar diversos testes em diferentes tipos de emuladores, para garantir que seu aplicativo vai funcionar com qualidade em diferentes celulares!
@@ -1481,7 +1477,6 @@ https://resocoder.com/2021/01/02/flutter-integration-test-tutorial-firebase-test
 
 @@08
 O que aprendemos?
-PRÓXIMA ATIVIDADE
 
 Nesta aula, você aprendeu como:
 Produzir um teste Manual:
@@ -1492,3 +1487,402 @@ Testar a Navegação entre telas:
 Na nossa lista, nossos passos iniciais estavam em navegar entre telas no aplicativo! Por isso, ensinamos ao nosso tester como verificar se a navegação está sendo realizada com maestria, uma vez que, ao clicar no botão que redireciona a tela, os novos elementos (informações da nova tela) aparecerão.
 Utilizar o enterText() para adicionar um texto a um widget:
 Durante nossa jornada, nos deparamos com uma situação inédita: a necessidade de inserir texto em um TextFormField para dar continuidade ao nosso teste. Essa necessidade foi sanada com a utilização de um novo método presente no tester : o enterText() que necessita de duas coisas: 1) um finder; e 2) do texto que será inserido no widget encontrado.
+
+#### 08/01/2024
+
+@03-Aplicando teste com Provider
+
+@@01
+Projeto da aula anterior
+
+Você pode ir acompanhando o passo a passo do desenvolvimento do nosso projeto e, caso deseje, você pode baixar o projeto da aula anterior.
+Bons estudos!
+
+https://github.com/alura-cursos/alura_flutter_intermediario_curso_1/tree/Aula_2
+
+@@02
+Criando um novo cliente
+
+Criamos nosso primeiro tipo de cliente, que é o "Ferro". Agora precisamos ir para área de cliente e cadastrar esse novo cliente.
+No nosso arquivo "app_test.dart", na linha 57 escreveremos o comentário // Testando novo cliente e em seguida voltamos ao emulador. A primeira coisa que precisamos fazer é sair da tela "Tipos de cliente", clicando no nosso ícone de menu. Sendo assim, codamos:
+
+      //Testando novo Cliente
+      await tester.tap(find.byIcon(Icons.menu));
+      await tester.pumpAndSettle();COPIAR CÓDIGO
+Então, da forma como fizemos antes, encontramos o ícone de menu, com find.byIcon() e selecionamos ele com .tap(). Em seguida, esperamos, sempre adicionando um pumpAndSettle() depois de uma ação.
+
+No nosso aplicativo, quando clicamos no ícone de menu, ele abre o drawer, onde precisamos localizar e selecionar o "Gerenciar Clientes". Para isso, podemos copiar as duas linhas de código que acabamos de criar e reutilizá-las para facilitar nossa vida. Nas alterações, mudaremos o .tap(), que será em um .text('Gerenciar clientes'), e em seguida esperamos.
+
+      await tester.tap(find.text('Gerenciar clientes'));
+      await tester.pumpAndSettle();COPIAR CÓDIGO
+Ao clicar no gerenciar clientes, ele será redirecionado para tela "Clientes" usando a navegação. Nela iremos procurar o floating action button e clicar nele. Para isso reaproveitaremos o código novamente, mas com um find.byType().
+
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();COPIAR CÓDIGO
+Clicando no botão flutuante e esperando, aparece o AlertDialog do Cadastrar cliente, onde precisaremos adicionar um nome, um e-mail e selecionar o tipo "Ferro". Começaremos adicionando o nome e esperando.
+
+Para fazer isso, usamos antes o .enterText(), encontrando o TextFormField. Além disso, como a Dandara está produzindo, passaremos 'DandaraBot' como texto. Depois precisamos encontrar o segundo TextFormField para adicionar o e-mail da Dandara.
+
+      await tester.enterText(find.byKey(Key('TextFormField')), 'DandaraBot');
+      await tester.enterText(find.byKey(Key('TextFormField')), 'dandara@bot.com.br');COPIAR CÓDIGO
+Com isso começamos a ter um pouco de problema, porque pedimos para procurar o TextFormField duas vezes com o mesmo comando. Talvez isso dê problema, mas antes de descobrirmos, vamos terminar de passar os comando que precisamos.
+
+Tendo escrito o nome e o e-mail, precisamos clicar no ícone de seta para baixo no lado direito do campo onde está selecionado "Platinum", e em seguida selecionar o "Ferro". Portanto pediremos para nosso robô fazer isso, reutilizando as linhas 64 e 65, mas com um .tap() em find.byIcon(Icons.arrow_downward).
+
+      await tester.tap(find.byIcon(Icons.arrow_downward));
+      await tester.pumpAndSettle();COPIAR CÓDIGO
+Com isso o menu de opções expande, então precisamos procurar e clicar em "Ferro".
+
+      await tester.tap(find.text('Ferro'));
+      await tester.pumpAndSettle();COPIAR CÓDIGO
+Para finalizar, precisarmos clicar em "Salvar" e esperar que funcione. Se fazemos isso no aplicativo, o cadastro aparece na tela clientes, então para nosso robô fazer o mesmo escrevemos:
+
+      await tester.tap(find.text('Salvar'));
+      await tester.pumpAndSettle();COPIAR CÓDIGO
+Por enquanto é isso que queremos testar. O resultado final ficou:
+
+      // Testando novo Cliente
+      await tester.tap(find.byIcon(Icons.menu));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Gerenciar clientes'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byKey(Key(TextFormField)), 'DandaraBot');
+      await tester.enterText(find.byKey(Key(TextFormField)), 'dandara@bot.com.br');
+
+      await tester.tap(find.byIcon(Icons.arrow_downward));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Ferro'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Salvar'));
+      await tester.pumpAndSettle();COPIAR CÓDIGO
+Subindo novamente no código, voltaremos nas duas setas verdes ao lado da linha sete, clicaremos com o botão direito e selecionaremos a execução apenas do teste. Podemos executar o teste também usando o atalho "Ctrl + Shift + F10".
+
+Quando o teste começa, no emulador vemos que ele consegue criar o tipo "Ferro", voltar para tela "Clientes", mas após abrir a AlertDialog temos um erro e o app fecha. Então ele falha justamente pelo que tínhamos pensado anteriormente.
+
+Analisando o teste, encontramos um stack trace do problema e, ao final, somos informados que houve um problema no teste de integração. Esse erro ocorreu no "WidgetTester.enterText", porque temos dois TextForms no AlertDialog.
+
+Descobriremos como sanar esse problema a seguir.
+
+@@03
+Escolhendo o Finder
+
+Como estamos cansados e cansadas de saber, o mundo dos Devs também é composto de erros e bugs. Olhando nosso projeto percebemos que o problema que encontramos dessa vez é que, ao cadastrarmos clientes, temos dois locais para adicionar texto, ou seja, dois TextFormFields.
+Voltando para as linhas 67 e 68 do "app_test.dart", solicitamos ao nosso robô que ele adicione um texto e procure um local com o tipo TextFormField, e assim tivemos um problema. Isso aconteceu porque temos dois TextFormField, e o robô não sabe diferenciar a qual nos referimos.
+
+Portanto ele procura por um TextFormField e, ao encontrar dois, ele fica confuso e para. Isso é natural, e eu coloquei esse erro para vocês terem consciência e criarem autocrítica ao produzirem testes.
+
+Não faz sentido procurar por um tipo quando tem vários deles na mesma tela, já que o robô não saberá o que fazer. Para resolver isso, podemos usar vários tipos diferentes de finders.
+
+Aprendemos sobre vários finders no último curso e agora usaremos desse conhecimento. Não podemos usar o byType(), precisamos usar um type que encontre widgets especificamente, e tem várias formas para isso.
+
+Voltando ao nosso aplicativo, com a AlertDialog aberta, reparamos que o TextFormField de cima tem como título "Nome" e tem um ícone. Então podemos procurá-lo por "Nome" ou pelo ícone e adicionar o texto nele, e o mesmo vale para o e-mail.
+
+Essa é uma forma, mas não é uma boa prática. Para esses casos, uma boa prática é usa a Key (chave). Portanto passaremos uma chave específica para o widget que queremos e buscaremos essa chave.
+
+Nosso primeiro passo, antes de alterar o tester, é acessar o projeto que a Dandara está fazendo e fazer uma pequena mudança nele. Então na lateral esquerda abriremos o "Project" e navegaremos por "lib > pages > clients_page.dart".
+
+Navegando pelo arquivo "clients_page.dart", encontramos o AlertDialog() a partir da linha 67, sendo ele que estamos testando. Descendo mais um pouco, na linha 76 encontramos o primeiro TextFormField, e o segundo TextFormField está na linha 84. Para facilitar nossos testes, adicionaremos uma chave em cada um deles.
+
+//código omitido
+
+    TextFormField(
+        key: Key('NameKey1'),
+        controller: nomeInput,
+        decoration: const InputDecoration(
+            labelText: 'Nome',
+            icon: Icon(Icons.account_box),
+        ),
+    ),
+    const Padding(padding: EdgeInsets.all(5)),
+    TextFormField(
+        key: Key('EmailKey1'),
+        controller: emailInput
+        decoration: const InputDecoration(
+            labelText: 'Email',
+            icon: Icon(Icons.email),
+        ),
+    ),
+
+//código omitido
+COPIAR CÓDIGO
+Então em cada TextField usamos o Key(), um widget que pede como valor uma String que funciona como uma chave. Nela podemos escrever letras aleatórias, códigos, UUIDs, entre outros.
+
+No nosso caso, usamos apenas NameKey1 para o nome e EmailKey1 para o e-mail. Essa escolha foi por motivos didáticos, para conseguirmos entender mais sobre a chave, mas o ideal é vocês criarem chaves aleatórias e customizadas para cada widget que buscarem no seu teste.
+
+Após construirmos uma chave para cada um dos nossos TextFormFields, percebemos que às vezes é impossível não alterar o projeto. Algumas pequenas alterações de projeto podem ser necessárias para nosso teste passar.
+
+Então não alteramos ações do projeto e nem criamos novas features, mas o alteramos para facilitar a construção do nosso tester. Ainda assim é importante avisarem para o cliente de vocês, ou seja, quem pediu para fazer o teste, que foi necessário acrescentar algumas linhas de código fora dos testes para eles terem a qualidade devida.
+
+Feita a alteração, a Dandara avisou que precisou mudar um pouco o projeto e podemos voltar para os testes. Agora alteraremos as linhas 67 e 68 de find.byType() para find.byKey(Key('')), passando as chaves que criamos.
+
+      await tester.enterText(find.byKey(Key('NameKey1')), 'DandaraBot');
+      await tester.enterText(find.byKey(Key('EmailKey1')), 'Dandara@bot.com.br');
+COPIAR CÓDIGO
+Lembrem-se que o CapsLock conta bastante na escrita da chave, então se errarem alguma letra maiúscula ou minúscula não vai funcionar. Portanto verifiquem se as chaves estão escritas exatamente iguais.
+
+Com tudo certo, vamos executar novamente nosso teste, torcendo para funcionar. Porém vocês já conhecem minha cara e sabem quando eu instigo a dúvida se vai funcionar ou se vai dar um novo erro. E quando nosso teste está rodando, temos uma nova falha.
+
+Dessa vez deixei o erro acontecer para mostrar que o trabalho de tester não é linear e nem simples, e existem alguns widgets com os quais precisamos ter bastante cuidado. Ao analisarmos o teste para descobrir qual foi o nosso erro, recebemos a mensagem que o finder encontrou dois widgets do tipo "Ferro" quando foi selecionar o "Ferro".
+
+Executando nosso projeto novamente, identificamos um widget problemático nos testes, o que é natural, porque se torna experiência. E com o app aberto, não criaremos novamente o DandaraBot, mas na tela "Clientes" clicaremos no botão flutuante para abrir nossa AlertDialog.
+
+Ao clicarmos no ícone de seta para baixo, que é o dropdown button, ele abre uma lista. Na base do Flutter, esse botão funciona abrindo dois widgets: um que clicamos no botão que desejamos e outro que não clicamos. Essa é uma feature desse widget.
+
+É importante sabermos como os widgets funcionam para testá-los com cuidado. Então ao usarmos esse widget dropdown, precisamos entender que ele abre dois widgets na nossa árvore de widgets. Por isso esses testes são mais robustos e cansativos, já que encontramos detalhes da arquitetura do Flutter.
+
+No nosso caso é tranquilo resolvermos esse problema. Na linha 73, onde temos o find.text('Ferro'), não podemos procurar só pelo texto "Ferro", porque aparecerá duas vezes na árvore de widgets. Para resolver isso, usaremos, o .last, porque, sabendo que existem dois, pedimos para clicar no último.
+
+      await tester.tap(find.text('Ferro').last);
+      await tester.pumpAndSettle();
+COPIAR CÓDIGO
+Foi uma alteração mínima e uma explicação gigante, mas quero novamente passar para vocês a experiência de entendermos os widgets completamente quando estamos trabalhando em testes. É difícil conhecer todas as nuances de todos os widgets antes de fazer um teste, por isso é natural encontrar erros como esse e aprendermos com eles.
+
+Executando nosso teste novamente, descobrimos que dessa vez ele conseguiu passar. Então o código do teste ficou:
+
+      //Testando novo cliente
+      await tester.tap(find.byIcon(Icons.menu));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Gerenciar clientes'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byKey(Key('NameKey1')), 'DandaraBot');
+      await tester.enterText(find.byKey(Key('EmailKey1')), 'dandara@bot.com.br');
+
+      await tester.tap(find.byIcon(Icons.arrow_downward));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Ferro').last);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Salvar'));
+      await tester.pumpAndSettle();
+COPIAR CÓDIGO
+As últimas coisas que precisamos fazer é garantir que nosso teste funcionou, ou seja, o DandaraBot do tipo ferro apareceu, e verificar o que não testamos. Faremos isso a seguir.
+
+@@04
+Desafio: teste-me se for capaz!
+
+Finalizamos o teste de integração entre as telas de lista de cliente e o tipo de cliente, garantindo que, ao produzir um novo tipo, é possível criar um novo cliente utilizando o novo tipo criado.
+Porém, por questões de tempo de curso, não testamos algumas ações no projeto.
+
+Agora, pra desafiar nosso conhecimento, eu gostaria de propor que você:
+
+Produza um teste que verifique o botão ‘Sair’ localizado no Drawer;
+Lembre-se de que ele finaliza o aplicativo!
+Crie um teste de Widget que testa apenas o icon_picker.dart;
+Adicione ao teste de integração a ação de deletar um cliente;
+Dica: Assim como o tap() e o enterText(), o tester possui um outro método chamado drag(), logo, utilize-o para produzir um teste que deleta um cliente!
+Mostre pra gente seus códigos de treino! Adoramos ver seu progresso no fórum e no Discord!
+
+Caso você esteja com dificuldade para entender alguns conceitos novos, você pode sempre pedir auxílio no Fórum ou no Discord!
+
+@@05
+Relembrando o provider
+
+No último vídeo produzimos o cliente DandaraBot do tipo ferro. Esse teste passou, mas faltou fazermos a verificação se, ao criarmos o cliente, ele realmente aparece na lista. Como fizemos essa verificação ao criarmos o tipo de cliente "Ferro", vou mostrar rapidamente como fazer.
+      //Verificando se o Cliente apareceu devidamente
+
+      expect(find.text('DandaraBot (Ferro)'), findsOneWidget);
+      expect(find.byIcon(Icons.card_giftcard), findsOneWidget);
+COPIAR CÓDIGO
+Então escrevemos o comentário "Verificando se o cliente apareceu devidamente" e esperamos encontrar o texto "DandaraBot (Ferro)" em apenas um widget. Também esperamos encontrar apenas um widget com o ícone card_giftcard que aparece na nossa tela de clientes.
+
+É bem tranquilo de entender, porque já fizemos isso várias vezes, mas se tiverem dúvidas, podem enviar no fórum do curso, que iremos responder. Só fiz esse comando rápido porque já o criamos várias vezes. Assim podemos focar na próxima parte do nosso teste.
+
+Vocês podem perguntar "Kako, não acabou?". Na verdade ainda falta verficarmos algo muito sutil e importante. Durante a produção de um aplicativo, precisamos ter cuidado com o gerenciamento de informações, ou seja, como essas informações transitam dentro do app.
+
+Nos últimos cursos nós aprendemos a trabalhar com o provider, que é um gerenciamento de estágios. Portanto precisamos garantir tanto que a informação apareça para pessoa usuária, quanto que o gerenciamento desse estado está sendo bem trabalhado. Para isso, precisamos relembrar sobre o Provider.
+
+Então acessaremos novamente a coluna "Project", à direita, e navegaremos para "lib > main.dart". Na main observamos que foi usado o MultiProvider, porque temos um provider de Clients (Clientes) e outro de Types (Tipos). O Clients é uma lista de clientes e o Types é uma lista de tipos. Precisamos verificar dentro dessa lista de clientes e tipos se apareceu a cliente DandaraBot e o tipo Ferro.
+
+Recapitulando. No nosso aplicativo, se abrirmos os tipos de clientes teremos uma lista que vem do provider. Precisamos verificar se o provider gerenciou, aceitou e recebeu essa informação, e que não foi só um widget separado que foi criado.
+
+Então estamos garantindo o gerenciamento desse estado, e quando criamos o tipo "Ferro", precisamos garantir que ele aparece no provider também. Sendo assim, voltaremos no nosso projeto e faremos uma alteração no "app_test.dart".
+
+Na linha 57, onde acabamos de criar um novo tipo de cliente, e verificamos se aparece na tela o tipo "Ferro" com o ícone de gift card (cartão de presente). Ao mesmo tempo em que verificamos isso, precisamos verificar se o provider funcionou, então usaremos um expect() com um actual e um matcher.
+
+Queremos acessar o Provider, que será nosso actual. Então no primeiro parâmetro do expect codaremos Provider.of(context), importando o Provider do pacote Provider.
+
+Observação: Essa é a forma que o provider funciona. Caso ainda tenham dúvidas, assistam novamente o curso de Provider, mas se não conseguirem ou ainda estiverem com dificuldade, também podem nos acionar no fórum.
+Precisamos passar o tipo desse provider, que é o do modelo criado nesse projeto. Então codamos Provider.of<Types>(context). Esse Types precisa conter uma informação, que descobriremos retornando ao "lib > models > types.dart".
+
+No arquivo "types.dart" observamos que o Types é uma lista de ClientType. E em "models > client_type.dart", vemos que o ClientType possui nome e ícone. Tudo isso nós estamos relembrando, e é isso que precisamos buscar na nossa lista. Nós teremos várias informações na lista, encontraremos o tipo que queremos, e qual é o nome e o ícone desse tipo.
+
+Faremos esse teste agora, então voltaremos para o arquivo "app_test.dart". E na linha 60, onde temos o Provider.of<Types>(context), buscaremos pelos types, que é essa lista de clientes, e será o último criado (last), que é aquele criado durante o teste. Nesse último criado, procuraremos pelo nome (name). E o matcher, ou seja, o que combina com esse nome, é 'Ferro'.
+
+expect(Provider.of<Types>(context).types.last.name, 'Ferro');
+COPIAR CÓDIGO
+Podemos usar o mesmo princípio para o ícone. Então copiaremos a linha 60, colamos na linha 61 e fazemos as alterações apenas para procurar o ícone.
+
+expect(Provider.of<Types>(context).types.last.name, 'Ferro');
+expect(Provider.of<Types>(context).types.last.icon, Icons.card_giftcard);
+COPIAR CÓDIGO
+Portanto, nosso provider precisa garantir que dentro do contexto (context) essa informação esteja certa no gerenciador. Contudo, já vemos um erro em ambos os códigos: ele não consegue identificar o contexto.
+
+Trataremos isso em breve, mas antes quero fazer essa mesma verificação para o cliente cadastrado. Portanto verificaremos no provider se o cliente que criamos tem a informação tratada.
+
+Para isso, na linha 90, após verificarmos se a "DandaraBot" foi criada, faremos a mesma verificação. Porém o tipo, ao invés de Types será o Clients do "models".
+
+Então se atentem a isso quando fizerem a importação, porque ao fazer o projeto nosso cliente criou uma classe com o mesmo nome de um pacote padrão do Dart, mas não é ela que queremos. Por isso é importante dar nomes mais específicos às coisas.
+
+Navegando para "lib > models > clients.dart", observamos que o Clients é uma lista de Client, que é uma classe também criada dentro desse modelo. Ao abrirmos o arquivo "client.dart", observamos que a classe Client possui nome, e-mail e tipo. É isso que estamos buscando no nosso teste.
+
+expect(Provider.of<Clients>(context).clients.last.name,'DandaraBot');
+expect(Provider.of<Clients>(context).clients.last.email,'dandara@bot.com.br');
+COPIAR CÓDIGO
+Então na Clients estamos buscando pelo nome e o e-mail do último item da lista clients, por isso, clients.last.name e clients.last.email. O matcher do nome é o "DandataBot" e o do e-mail é o "dandara@bot.com.br", que são os dados do cliente que acabamos de criar. Com isso iremos conferir se o Provider, que é nosso gerenciador, recebeu essas informações.
+
+Porém, como expliquei há pouco, nosso context não foi encontrado. Isso é um problema que temos que resolver. Precisamos saber como o tester se encontra no contexto. Aprenderemos isso a seguir.
+
+@@06
+Implementando um contexto
+
+Começamos a fazer o teste com Provider, verificando se quando adicionamos uma nova informação, seja de tipo ou de cliente, nosso gerenciador de estados, que nesse caso é o Provider, está fazendo um trabalho de qualidade. Portanto é importante testarmos também se nossas informações estão transitando de forma correta.
+Contudo, chegamos a um impasse, que é: o Provider pede por um contexto, e nosso tester não leva em consideração nenhum contexto específico. Nosso tester constrói os contextos, testa tudo e encerra.
+
+Relembrando, o contexto é um local da nossa árvore de widgets que tem uma determinada informação e, mudando o contexto, essa informação some. Usamos o gerenciamento de estado para garantir que essa informação possa navegar de um contexto para outro.
+
+No caso do Provider, toda informação é armazenada em um contexto único do Provider daquela informação. No caso, temos o contexto das informações de Types e de Clients.
+
+Começaremos com o contexto do Types. Para descobrirmos como acessar esse contexto, precisamos analisar o arquivo "main.dart".
+
+No "main.dart" temos a função main(), que é a função principal e a primeira a ser rodada. Dentro dela temos o MultiProvider(), que armazena essas informações, e o child, que é o MyApp().
+
+O MyApp() é importante para o que estamos fazendo, porque ele é o primeiro widget da nossa árvore de widgets que builda (constrói) um contexto. Portanto o contexto só aparece no child, depois que rodamos nossa main().
+
+Dessa forma, para encontrarmos o contexto do MyApp() com facilidade, precisamos contornar a situação. Então vamos aprender como fazer isso.
+
+Precisamos adicionar uma chave na função main(), porque fica mais fácil encontrarmos as coisas quando temos uma chave para referenciar. Então adicionaremos o parâmetro Key providerKey.
+
+Podemos receber uma informação antes de rodarmos a função main(), mas como essa é uma função muito específica de inicialização do Dart, ela necessariamente precisa começar com o parâmetro de lista. Por isso escrevemos main(List<String> list, Key providerKey).
+
+Assim temos uma lista chamada list e uma chave providerKey. Novamente, é obrigatório adicionarmos uma lista como primeiro parâmetro, ainda que não formos utilizá-la, porque é um formato padrão de Dart.
+
+Lembrete: Ao adicionarmos parâmetros à função main(), é imprescindível que o primeiro parâmetros seja uma lista de strings, ou seja, uma lista de argumentos, para manipularmos a main().
+Adicionada nossa lista e nossa chave, conseguimos acessar o contexto, porque podemos traduzir essa chave para o MyApp(). Então na classe MyApp(), que começa na linha 22, temos o construtor, que está na linha 23, e ele coloca como parâmetro opcional uma chave: const MyApp({Key? key}).
+
+Sendo assim, na linha 19, onde declaramos o MyApp() no child, podemos escrever uma chave, que será key: providerKey, que declaramos na main. Com isso temos um erro sob o const, informando que não se trata mais de um valor constante. Isso é verdade, então vamos apagar o const e assim não teremos mais problema.
+
+void main({List<String> list,Key providerKey) {
+  runApp(MultiProvider(providers: [
+    ChangeNotifierProvider(create: (context) => Clients(clients: [])),
+    ChangeNotifierProvider(create: (context) => Types(types: [
+      ClientType(name: 'Platinum', icon: Icons.credit_card),
+      ClientType(name: 'Golden', icon: Icons.card_membership),
+      ClientType(name: 'Titanium', icon: Icons.credit_score),
+      ClientType(name: 'Diamond', icon: Icons.diamond),
+    ]))
+  ],
+  child: MyApp(key: providerKey,)));
+}COPIAR CÓDIGO
+Recapitulando, adicionamos uma lista de string na main() para adicionarmos um novo parâmetro, no caso, a chave providerKey. Essa chave passamos para o MyApp(), e dessa forma conseguimos acessar o contexto. Sendo assim, voltaremos para o arquivo "app_test.dart".
+
+No "app_test.dart" , temos um novo erro. Na linha 14 o app.main() está pedindo por dois argumentos. O primeiro é uma lista de strings, que deixaremos vazia, porque não usaremos nenhum argumento que manipula nossa main() por enquanto.
+
+O segundo é um providerKey, e escreveremos um GlobalKey() ("ChaveGlobal"). A partir dessa chave global acessaremos o contexto.
+
+E para garantir que esse GlobalKey não mudará enquanto o chamamos, ou seja, que não serão outras instâncias de GlobalKey, na linha acima do app.main() criaremos um final providerKey = GlobalKey();. E ao invés de adicionar o GlobalKey() como parâmetro, passaremos o providerKey, que é uma instância específica de uma chave global.
+
+//código omitido
+    testWidgets('Integration Test', (tester) async{
+      final providerKey = GlobalKey();
+      app.main([], providerKey);
+      await tester.pumpAndSettle();
+//código omitidoCOPIAR CÓDIGO
+Agora que temos essa chave, podemos acessar o contexto no nosso Provider.of(). Então, na linha 61, ao invés de deixar o context, iremos passar o providerKey.currentContext!.
+
+Assim pedimos para observar o contexto atual (currentContext) da providerKey, e informamos que ele não estará nulo, com a exclamação (!). Esse contexto não estará nulo porque ele já terá sido escrito durante o teste pelo aplicativo. Por fim, avisamos para o Provider que ele não precisa ouvir, escrevendo uma vírgula e depois listen: false.
+
+expect(Provider.of<Types>(providerKey.currentContext!,listen: false).types.last.name, 'Ferro');COPIAR CÓDIGO
+Dessa forma podemos verificar se a informação do nome do tipo que criamos está correta no Provider. Sendo assim, faremos esse mesmo processo com os outros expects que criamos, ou seja, nas linhas 63, 92 e 93.
+
+//código omitido
+
+      expect(Provider.of<Types>(providerKey.currentContext!,listen: false).types.last.name, 'Ferro');
+
+      expect(Provider.of<Types>(providerKey.currentContext!,listen: false).types.last.icon, Icons.card_giftcard);
+
+//código omitido
+
+      expect(Provider.of<Clients>(providerKey.currentContext!,listen: false).clients.last.name,'DandaraBot');
+      expect(Provider.of<Clients>(providerKey.currentContext!, listen: false).clients.last.email,'dandara@bot.com.br');
+
+//código omitidoCOPIAR CÓDIGO
+Feito isso, podemos rodar nosso teste e descobrir se ele passa sem problemas. Ele consegue criar o novo tipo e o novo cliente, mas ao final ele falha.
+
+No caso ele esperava o "dandara@bot.com.br", com "d" minúsculo, e encontrou o "Dandara@bot.com.br", com "D" maiúsculo. Com isso notamos que o teste realmente procura por todas as diferenças. Então faremos essa correção na linha 76.
+
+await tester.enterText(find.byKey(Key('EmailKey1')), 'dandara@bot.com.br');COPIAR CÓDIGO
+Correção feita, inicializaremos o teste mais uma vez. Dessa vez dá tudo certo no nosso teste de integração.
+
+Eu sei que esse final foi um pouco mais complicado, mas conversaremos mais sobre esse tema na próxima aula.
+
+@@07
+Provider
+
+Você está ajudando uma colega de curso a implementar um teste que contempla o Provider no código dela:
+void main(){
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+...
+
+      expect(Provider.of<Types>(context,listen: false).types.last.name, 'Ferro');
+
+      expect(Provider.of<Types>(context).types.last.icon, Icons.card_giftcard);
+
+ ...
+    });
+  }COPIAR CÓDIGO
+Após revisar atentamente o código, você mudaria alguma coisa nele? O quê?
+
+Mudaria o expect por tester.pumpAndSettle.
+ 
+Alternativa correta
+Não mudaria nada, o código está perfeito!
+ 
+Alternativa correta
+Mudaria o context , dado que precisamos buscar o contexto especifico do teste, como, por exemplo, o providerKey.currentContext.
+ 
+Isso mesmo, precisamos pegar o contexto que foi construído durante o teste, dado que o Provider salva as informações baseando se em um contexto criado.
+Alternativa correta
+Adicionaria olisten: false no contexto da linha inferior.
+ 
+Exatamente! A linha de baixo não possui o parâmetro listen e isso força o Provider a escutar sempre que houver mudanças, mas não queremos esse comportamento durante o teste!
+
+@@08
+Faça como eu fiz
+
+Hora de colocar a mão no código!
+Conforme visto em aula, agora é o momento de você replicar a implementação:
+
+Produza um teste que produz um novo cliente;
+Fique de olho para garantir que o novo Tipo está presente no novo cliente!
+Implemente um teste que verifica a funcionalidade do gerenciamento de estados!
+Vamos lá?
+
+@@O objetivo desta atividade é permitir que você pratique e veja se compreendeu bem a técnica abordada durante a videoaula.
+Se quiser, pode consultar o commit desta implementação no GitHub.
+
+https://github.com/alura-cursos/alura_flutter_intermediario_curso_1/commit/851cb81f24e53ae4a47d15b2662aab35b5186093
+
+@@09
+O que aprendemos?
+
+Nesta aula, você aprendeu a:
+Produzir um teste que cria novos Clientes:
+Continuando nossos passos para construir um teste de ponta a ponta, desenvolvemos as ações para testar a criação de um novo cliente, dado que já havíamos criado um novo tipo no mesmo teste. Verificamos o comportamento do aplicativo em cada um dos passos e garantimos a funcionalidade do aplicativo!
+Identificar qual o finder ideal para situações de teste:
+Durante a produção dos testes, nos deparamos com um problema que é bem comum: O findernão encontra o widget corretamente. Isso pode ocorrer por diversos motivos, por conta da natureza do findere do próprio widget que está sendo buscado. Vimos a importância de saber mais de uma forma de identificar um widget na nossa árvore!
+Implementar um teste que verifica o Provider:
+Após criar os testes necessários para verificar a qualidade do aplicativo, decidimos testar a qualidade do gerenciamento de estados presente no projeto. No caso atual, o Provider foi o gerenciamento de estados escolhido, portanto, foi aplicado uma ação de teste para garantir que o Gerenciamento continue funcionando com qualidade.
+Concluímos mais uma aula. Vejo você na aula 4!
