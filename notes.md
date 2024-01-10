@@ -1886,3 +1886,530 @@ Durante a produção dos testes, nos deparamos com um problema que é bem comum:
 Implementar um teste que verifica o Provider:
 Após criar os testes necessários para verificar a qualidade do aplicativo, decidimos testar a qualidade do gerenciamento de estados presente no projeto. No caso atual, o Provider foi o gerenciamento de estados escolhido, portanto, foi aplicado uma ação de teste para garantir que o Gerenciamento continue funcionando com qualidade.
 Concluímos mais uma aula. Vejo você na aula 4!
+
+#### 10/01/2024
+
+@04-Analisando o mercado de trabalho
+
+@@01
+Projeto da aula anterior
+
+Você pode ir acompanhando o passo a passo do desenvolvimento do nosso projeto e, caso deseje, você pode baixar o projeto da aula anterior.
+Bons estudos!
+
+https://github.com/alura-cursos/alura_flutter_intermediario_curso_1/tree/Aula_3
+
+@@02
+Realizando outros testes
+
+Fizemos todos os testes possíveis, garantindo a qualidade do projeto:
+Testes de unidade;
+Testes de widgets;
+Testes de integração.
+Será que é só isso que precisamos fazer?
+
+Antes de entregar o projeto para o seu dono, Dandara decidiu abrir o aplicativo para ver se não esqueceu nada, se nada havia mudado ou se nada estava funcionando de um jeito estranho. Devemos lembrar que ela pegou o projeto pronto, a fim de executar testes para garantir a qualidade do projeto.
+
+Dandara rodou o projeto e viu um problema: quando ele é executado, o emulador exibe somente uma tela branca. O projeto não está abrindo.
+
+Como resolveremos isso? Se rodarmos o projeto e olharmos no console, ele nos explica que houve uma tentativa de chamar a função main().
+
+E/Flutter ( 4455): Tried calling: main()
+Contudo, essa função possui agora dois parâmetros, e eles não foram dados quando o projeto rodou na primeira vez. É o nosso teste quem dá esses parâmetros.
+
+Por não ter os parâmetros, a função main() não sabe o que fazer. Resolveremos este problema de forma tranquila.
+
+Acessaremos o arquivo main.dart, cuja primeira linha de código abaixo dos imports exibe a função main().
+
+void main(List<String>? list,Key? providerKey) {
+
+//Código omitido
+
+}
+COPIAR CÓDIGO
+Daremos valores iniciais para os seus parâmetros:
+
+à esquerda de list, adicionaremos = const [], dando à ele uma lista constante vazia;
+à esquerda de Key?, adicionaremos = Key(''), dando à ela uma constante de chave vazia.
+void main(List<String>? list = const [],Key? providerKey = const Key('')) {
+
+//Código omitido
+
+}
+COPIAR CÓDIGO
+Não podemos dar um valor inicial a um parâmetro. Para isso funcionar, temos que relembrar nossos conceitos de Dart e transformá-los em parâmetros nomeados opcionais. Para isso, adicionaremos chaves ao redor deles.
+
+void main({List<String>? list = const [],Key? providerKey = const Key('')}) {
+
+//Código omitido
+
+}
+COPIAR CÓDIGO
+Desta forma, eles receberão os valores iniciais e a nossa função main() poderá rodar.
+
+Voltaremos ao arquivo app_test.dart e buscaremos o início dele, onde rodamos o nosso main() pela primeira vez.
+
+void main() {
+
+// Código omitido
+
+}
+COPIAR CÓDIGO
+Para não deixarmos nenhuma ponta solta, transformaremos os seus parâmetros em parâmetros nomeados.
+
+na linha app.main([], providerKey) adicionaremos ao primeiro parâmetro, no início dos parênteses, uma list: ;
+na mesma linha, adicionaremos à esquerda de providerKey um providerKey: .
+void main() {
+
+// Código omitido
+    app.main(list: [], providerKey: providerKey);
+// Código omitido
+}
+COPIAR CÓDIGO
+Resolvemos o problema. Se dermos "Run", o projeto rodará normalmente.
+
+Lembrando que realizamos essa alteração no arquivo main.dart para acessar o context a fim de testar o Provider. Com isso, alteramos o nosso projeto principal inicial.
+
+Não há problemas em alterar o projeto, contanto que não modifiquemos a forma como ele funciona. Quando adicionamos os parâmetros, a aplicação parou de funcionar, e por isso devemos tomar cuidado. Ao criar testes de integração, temos que garantir que o aplicativo principal funcione.
+
+Neste caso, não tivemos escolha. Houve a necessidade de adicionar o providerKey para receber e utilizar o context do aplicativo inteiro.
+
+A Dandara veio até nós com as seguintes dúvidas:
+
+"Será que não é possível diminuir o tamanho desse teste?"
+Voltando ao app_test.dart, veremos que o código do teste de integração é gigantesco, constituído de 100 linhas. Se o nosso aplicativo fosse maior, esse código se estenderia ainda mais.
+
+Além disso, ele possui várias partes:
+
+verificação do aparecimento do cliente;
+testes de clientes novos;
+testes de criação de um novo tipo, entre outros.
+Será que não podemos refatorá-las?
+
+Anteriormente, quando abordamos a necessidade de testes de integração serem integrados, entendemos o motivo desses testes serem tão extensos e complexos. Não podemos refatorá-los e sair tirando pedaços dele para chamá-los depois. Dessa maneira, tiramos a dependência entre eles.
+
+Precisamos testar junto às dependências e aos elementos que conversam entre si. Portanto, não podemos refatorar o teste para deixá-lo enxuto. Podemos utilizar técnicas de boas práticas para deixar o código enxuto, mas nunca refatorá-lo.
+
+Neste teste, não utilizamos algo que seria essencial: o mock. A Dandara nos perguntou:
+
+"Qual o motivo disso?"
+Você consegue respondê-la?
+
+Não utilizamos o mock pois este teste não trabalha com informações externas e, portanto, não possui banco de dados, persistências internas que conversem com arquivos fora do projeto ou requisições HTTP que busquem dados de APIs da internet.
+
+Relembrando o conceito de mock: Trata-se de uma ferramenta utilizada quando nos comunicamos com projetos externos ao nosso, afinal, podem ocorrer falhas nessa comunicação. Já que não é o nosso caso, não precisamos utilizá-la.
+
+Vamos verificar se resta algum elemento a ser testado. Em nossas aulas, não testamos algumas coisas que a própria Dandara havia testado, como por exemplo o Icon Picker.
+
+Quando acessamos o menu lateral esquerdo do aplicativo, selecionamos "Tipos de clientes", clicamos no botão "+" para criar um novo tipo e clicamos em "Selecionar ícone", abrimos uma tela com diversos ícones. Não testamos essa página para garantir que estes ícones estejam aparecendo completamente.
+
+Contudo, Dandara teve que realizar este teste para garantir a qualidade do projeto. Além da lista de ícones, existem outros pequenos detalhes que não garantimos em nossos testes:
+
+Cores (por exemplo, garantir que estejam uniformes);
+Formatos de widgets;
+Tamanhos de tela;
+Existe outro ponto importante que não testamos: quando temos um cliente cadastrado, podemos ativar a função de deleção arrastando-o para o lado direito. Não vimos se o Tester consegue efetuar a ação de arrastar e deletar, nem se o cliente some do Provider e da tela após a deleção.
+
+Não fizemos esses testes por questão de tempo: o nosso curso ficaria muito grande se abordássemos estas possibilidades.
+
+O fato é que existem detalhes — como cores e fontes —, que não precisam ser testadas, a não ser que o cliente solicite.
+
+Antes de terminarmos o vídeo, responderemos a uma pergunta: e se depois de entregarmos o projeto, o cliente decide adicionar uma nova feature, como adicionar um novo botão, uma nova ação ou qualquer novo comportamento?
+
+Será que existe uma forma certa de executar essa tarefa? Vamos abordar este caso no próximo vídeo.
+
+@@03
+Entendendo o método DDD
+
+No último vídeo, levantamos uma dúvida: após todos os testes prontos, será que conseguimos implementar uma nova feature solicitada pela pessoa cliente?
+A resposta é sim. Contudo, existe uma forma certa de produzir nossos projetos e garantir a sua qualidade.
+
+Entenderemos os métodos de desenvolvimento no mercado de Flutter. Existem vários deles, mas neste curso abordaremos os três mais usados:
+
+DDD (Domain-Driven Design ou Design Baseado no Domínio);
+BDD (Behavior Driven Development ou Desenvolvimento Baseado em Comportamento) e
+TDD (Test Driven Development ou Desenvolvimento Baseado em Testes).
+Neste vídeo, abordaremos especificamente o DDD.
+
+Antes disso, vamos relembrar a história por trás dos nossos testes? Uma pessoa ou empresa produziu um aplicativo e o lançou no mercado sem nenhum teste. As pessoas começaram a utilizá-lo, porém, erros e bugs ocorreram em vários locais.
+
+A falta de garantia na qualidade fez com que as pessoas parassem de utilizá-lo — ou seja, o aplicativo "flopou", não foi possível que ele crescesse e a empresa perdeu dinheiro.
+
+Para garantir essa qualidade, aprendemos a produzir testes. Mas será que existe um momento certo para introduzi-los? Será que quando entrarmos em uma empresa, precisaremos saber quando inserir testes?
+
+A resposta é sim! No mercado de trabalho, é importante entender métodos de desenvolvimento e como os testes se aplicam à eles, garantindo desta maneira a sua qualidade enquanto pessoa desenvolvedora.
+
+Vamos à importância dos métodos de desenvolvimento mais utilizados em Flutter. É importante entender a diferença entre estes métodos, pois as empresas podem utilizar um ou mais deles.
+
+DDD
+No modelo DDD ou Domain Driven Design (Design Baseado no Domínio), o Domínio representa a relação deste aplicativo com a vida real. Por exemplo: em um aplicativo de banco, focaremos nas funcionalidades de um banco. Em um aplicativo de venda, desenvolvemos pensando nas operações de um comércio.
+
+Este método é focado no domínio, no design, ou seja, no que aparecerá para a pessoa usuária. Portanto, pensamos nos seguintes aspectos:
+
+Layout — começamos pensando em telas;
+User Experience — a experiência que a pessoa usuária terá com os elementos da tela;
+Funcionalidades — como o aplicativo resolverá determinados problemas do mundo real.
+Este esquema deixa claro como separamos as formas de desenvolvimento. No DDD, pensamos primeiro em como o aplicativo resolverá o problema, depois no código, sua arquiterura e organização, e por último nos testes.
+
+Vantagens
+Fácil de aplicar
+
+Entendemos facilmente como funcionará o aplicativo. No exemplo do banco, percebemos rapidamente que precisamos produzir transações, criar clientes, tipos de clientes, implementar moedas, entre outras funções.
+
+Didático
+
+Quando o explicamos para alguém, abordamos a forma do aplicativo resolver o problema, o que torna a ideia fácil de transmitir e compreender.
+
+Aplicativos pequenos
+
+Apesar de ser possível implementar este modelo em aplicativos grandes, nos pequenos é muito fácil criar a base de um aplicativo produzindo o seu MVP.
+
+Desvantagens
+Difícil de crescer
+
+É difícil ampliar um aplicativo desses, pois pensamos primeiro na funcionalidade, no domínio, no comércio e no layout, em detrimento do código. Se não pensamos primariamente no código, a sua organização pode ser falha.
+
+Manutenção difícil
+
+A manutenção é o entendimento do código. É difícil a manutenção em aplicativos criados com este método devido à desorganização do código.
+
+Testes como última etapa
+
+Fazemos os testes por último, após a ideia ter sido produzida e o aplicativo ter sido codado.
+
+Inclusive, foi dessa forma que fizemos os outros cursos, até aqui: pensamos em como o produto seria, fizemos as telas, codamos e por fim aplicamos os testes.
+
+Aplicando o DDD no Flutter
+Vamos utilizar o nosso aplicativo de clientes como exemplo. Fizemos todos os testes e o entregamos.
+
+Depois de testarmos tudo, a pessoa dona do aplicativo decidiu implementar a seguinte feature: quando houver um clique na pessoa cliente, o e-mail dela aparecerá logo abaixo dessa informação, por meio de um Scaffold ou snackbar.
+
+Utilizando o DDD, antes de criar a nova feature, pensaremos no layout — ou seja, em como esse e-mail aparecerá na minha tela: em um snackbar? Em um dialog? A mensagem será grande ou pequena? Será em cima do nome ou embaixo dele?
+
+Em seguida, pensaremos na experiência da pessoa usuária — qual será a forma que tornará a informação mais fácil para a pessoa usuária? Embaixo? Em cima? Ao nível dos olhos? O tamanho da fonte será importante?
+
+Por fim, aplicaremos a funcionalidade — como codaremos essa feature?
+
+Depois disso tudo, focaremos nos testes. Esta é a metodologia DDD, que tem como foco principal o Domínio.
+
+E os outros métodos? A seguir, vamos abordá-los.
+
+@@04
+Entendendo o método TDD
+
+Aprenderemos uma nova metodologia de desenvolvimento: o TDD.
+Antes de partirmos para este assunto, vale relembrar que estamos aprendendo essas metodologias para o mercado de trabalho, ou seja, para quando procurarmos nossa vaga em uma empresa, uma startup ou mesmo para quando produzirmos nosso próprio aplicativo.
+
+É imprescindível entendê-las pois elas são muito usadas nas empresas.
+
+Nesta aula, aprenderemos o que é o TDD e veremos um exemplo prático no aplicativo que testamos no curso.
+
+TDD
+No modelo TDD ou Test Driven Development (Desenvolvimento Baseado em Testes), fazemos o teste primeiro. Como assim?
+
+A ordem dos fatores altera completamente o nosso produto — no caso, o nosso projeto. Quando dizemos que o desenvolvimento é focado no teste, significa que antes de implementar uma nova feature, fazemos um teste para ela.
+
+Suponhamos que colocaremos um botão no nosso aplicativo. Primeiro, criamos o teste para garantir a sua qualidade e em seguida o criamos. Seguimos a seguinte ordem:
+
+Criamos o teste, que falhará em um primeiro momento;
+Criamos a funcionalidade — neste caso, um botão — que fará o teste funcionar;
+Após o teste funcionar e tivermos o botão, nos preocuparemos com o design, o domínio, a qualidade, a eficiência, entre outros aspectos.
+Realizando o teste primeiro, garantimos a qualidade, evitando que adicionemos um botão que criará bugs ou outra feature que trará problemas para o aplicativo.
+
+Vantagens
+Qualidade Este método garante a qualidade do projeto. Nos casos em que temos um projeto gigante e queremos adicionar a ele novas features, realizamos um teste para garantir que ela não quebre o projeto e não apresente problemas nos celulares das pessoas.
+
+Rapidez crescente
+
+Quando implementados novas funcionalidades em aplicações, temos uma rapidez crescente.
+
+Lembrando que no DDD, método que utilizamos anteriormente, produzimos o projeto inteiro e depois realizamos testes. Contudo, implementar todo o projeto e depois todos os testes demanda muito tempo e esforço.
+
+No momento de implementar os testes, precisamos voltar no projeto para analisar como as coisas funcionam, o que gera um tempo de produção maior.
+
+Quando realizamos primeiramente o teste e depois a funcionalidade, diminuímos a distância entre estas etapas, fazendo com que a produção de ambas seja mais rápida. Sem falar que este método é maravilhoso para quando temos aplicativos grandes e funcionais e queremos adicionar coisas novas prezando pela qualidade do projeto.
+
+Desvantagens
+Difícil aprender
+
+Fazer um teste que não funciona e depois criar as funcionalidades para que ele funcione é um processo um pouco difícil de compreender. Mas com o tempo, nos acostumamos com essa ideia.
+
+Voltado para novas features
+
+Este método é excelente para aplicar novas features, mas não tão bom quando precisamos implementar um projeto do zero. No caso de um MVP ou um projeto teste, não é tão interessante iniciar pelos testes para depois criar as telas básicas.
+
+Lento no início
+
+Considerando que temos o projeto pronto, com testes de interação, de widgets e de unidade já implementados. Se, a partir daí, começarmos a adicionar novas features, o começo será lento.
+
+Este método tende a ser mais devagar no início, mas a sua velocidade aumenta conforme nos adaptamos a esse formato e aplicamos novas features e novos testes.
+
+Aplicando o TDD no Flutter
+Vamos relembrar a nova feature adicionada pela pessoa dona do projeto: quando clicamos nas pessoas clientes, devem aparecer logo embaixo os seus e-mails. Como isso seria feito utilizando o método TDD?
+
+Já sabemos qual será a feature, portanto primeiro produziremos o seu teste, que essencialmente falhará. Após o teste, codaremos a funcionalidade, que fará com que o nosso teste seja válido.
+
+Por fim, começamos a trabalhar no design, pensando em como será o layout, verificando se será utilizado um widget, definindo quais os formatos e as cores que serão utilizadas, entre outros detalhes.
+
+Vamos aplicar o TDD a um exemplo prático: ao invés de somente visualizarmos o aplicativo funcionando, vamos entender como utilizar este método no código.
+
+Antes de implementar a feature, vamos até o código e buscaremos a pasta de testes. Nela, escreveremos um teste para a feature — neste caso, o clique na pessoa cliente deverá exibir uma mensagem com o seu e-mail.
+
+Abaixo, criamos um teste simples onde o tester clicará no DandaraBot e esperará os microprocessos. Ele esperará encontrar um widget denominado ScaffoldMessenger, mas apenas um.
+
+//Verificando a nova Feature
+await tester.tap(find.text('DandaraBot (Ferro)'));
+
+await tester.pumpAndSettle();
+
+expect(find.byType(ScaffoldMessenger), findsOneWidget);
+COPIAR CÓDIGO
+Quando o executarmos ele falhará, pois não criamos nenhum comportamento que faça com que apareça uma nova informação ao tocarmos no DandaraBot.
+
+Importante: O teste deve ter clareza — ou seja, evidenciar a ação a ser implementada (neste caso, a verificação da nova feature).
+Para que o teste não falhe, criaremos a funcionalidade. Iremos até o arquivo que contém o ListTile, o objeto que compõe o DandaraBot do tipo Ferro e que compõe todas as informações provenientes do Provider.
+
+Nesta seção, implementaremos o InkWell() que aceita um clique nesse widget. Uma vez que o clique ocorrer através do onTap, um ScaffoldMessenger que mostra o e-mail da Dandara será exibido.
+
+InkWell(
+    onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Email: $(list.clients[index].email)')));
+    }
+    child: ListTile(...));
+COPIAR CÓDIGO
+Desta forma, a funcionalidade foi implementada.
+
+Importante: O comportamento da feature deve ser o suficiente para validar o teste. Após a validação, podemos nos preocupar em deixar o código inteligível.
+Nos resta abordar o método BDD. Qual será a diferença entre BDD, TDD e BDD? Veremos isso no próximo vídeo.
+
+@@05
+TDD ou DDD
+
+Você foi contratado para prestar uma consultoria remota para uma startup que está iniciando suas operações em São Paulo!
+Na primeira reunião, você ficou sabendo que eles precisam de aplicativo de aluguel e venda de imóveis que deve ser lançado e entregar valor rápido para o cliente.
+
+Qual seria a melhor metodologia de desenvolvimento de software nesse caso - e por quê?
+
+Uma boa escolha seria o DDD que foca nos testes, dessa forma conseguimos produzir features de forma rápida e ainda garantir a qualidade do projeto!
+ 
+Alternativa correta
+Devemos utilizar o BDD, pois ele é o que garante melhor qualidade para o projeto, e explicar para o cliente que uma aplicação produzida de forma rápida não será possível.
+ 
+Alternativa correta
+A melhor alternativa seria o DDD que foca em produzir valor e que facilita a produção de aplicações rápidas e simples, entregando as funcionalidades desejadas.
+ 
+Isso aí! O DDD é a metodologia que facilita a criação de aplicações mínimas e que conversam com o domínio (no caso do app pedido, o domínio é aluguel e venda de imóveis), podendo mostrar um MVP (produto de valor mínimo) para entregar valor rápido ao cliente.
+Alternativa correta
+Precisamos utilizar o TDD que foca no domínio do produto e facilita a produção rápida, pois implementa testes ao mesmo tempo que produz o aplicativo.
+
+@@06
+Para saber mais: CI/CD
+
+Uma vez que trabalhamos em projetos grandes começamos a aplicar as três metodologias de desenvolvimento de software que estamos aprendendo:
+DDD;
+BDD;
+TDD.
+É importante mencionar que é natural que aplicativos/projetos que estão em constante melhoria possuem processos constantes de entrega e de integração, também conhecido como CI/CD ( Continuous Integration & Continuous Deployment), caso você tenha curiosidade sobre o tema separei um artigo, em inglês do Hussain Habibullah.
+
+https://medium.com/flutter-community/set-up-ci-cd-for-your-flutter-application-b62d3493498
+
+@@07
+Entendendo o método BDD
+
+Finalizaremos o estudo dos métodos de desenvolvimento com o BDD. Vamos entendê-lo e aplicá-lo por meio de exemplos práticos utilizando o nosso aplicativo.
+Se o TDD é mais utilizado, por que deixamos o BDD por último? Na verdade, não podemos assumir que exista um método mais utilizado no mercado. Cada empresa deve avaliar e verificar qual o método ideal para ser usado no momento atual do seu projeto.
+
+Existem metodologias que são boas para o começo do projeto, outras que são úteis no meio dele, e também metodologias que se encaixam melhor nas etapas finais. Outro fator de escolha é o tamanho da equipe.
+
+Portanto, tudo depende das necessidades e do momento em que vive cada empresa.
+
+Importante: Estamos tratando das metodologias de forma introdutória neste curso afim de que você tenha uma noção do assunto para os momentos em que buscar o mercado de trabalho. É imprescindível que você estude-as a fundo paralelamente ao curso, pois elas possuem muitos detalhes, os quais não veremos aqui.
+BDD
+No BDD ou Behavior Driven Development (Desenvolvimento Baseado em Comportamento) a ordem dos fatores continua alterando o produto. Neste caso, não começamos com testes: o seu foco é na funcionalidade. Seguimos a seguinte ordem:
+
+Organizamos a funcionalidade da feature que queremos adicionar — seja um botão, uma tela ou outra coisa. Focamos em fazê-la funcionar muito bem.
+Produzimos um teste que dirá onde a funcionalidade pode falhar.
+Por fim, nos preocupamos com o design, com o layout e com o domínio — por exemplo, como a feature aparecerá, qual será o formato do botão, etc.
+É importante entender que, para mantermos a qualidade, o teste e a funcionalidade andam lado a lado e dialogam entre si. O teste informa as alterações que devem ser feitas pela funcionalidade. Após a alteração de comportamento, o teste também é alterado.
+
+Vantagens
+Menos retrabalho
+
+Considerando que o teste e a funcionalidade devem andar lado a lado, o método TDD é o que causa mais retrabalho, devido ao teste ser implementado primeiro. O teste se molda baseado na funcionalidade, portanto precisamos alterar constantemente os testes, perdendo bastante tempo no processo.
+
+O BDD diminui bastante este problema.
+
+Didático
+
+Não precisamos nos preocupar em primeiro fazer um teste, que é mais difícil de entender. É mais fácil entender e construir a funcionalidade em si, pois é um processo mais visual e que possui uma lógica mais linear.
+
+Voltado para aplicativos grandes
+
+Este método é excelente para os momentos em que precisamos aumentar o tamanho do aplicativo e garantir a sua qualidade enquanto adicionamos novas features e implementamos testes.
+
+Desvantagens
+Dependente de comunicação
+
+Em empresas grandes e com grandes times, a necessidade de comunicar a funcionalidade com os testes aumenta a complexidade do trabalho. Muitas vezes, a implementação de um novo teste ou funcionalidade realiza alterações em outro que já existe.
+
+Um bom exemplo é o caso dos testes de integração que vimos anteriormente, onde eles se constituem de uma junção de vários testes de widgets e de unidade. Se alterarmos um teste, alteramos também o teste de integração.
+
+Por isso, precisamos de um nível alto de comunicação para que isso funcione.
+
+Documentação
+
+Ao utilizar esta metodologia, é importante construir uma documentação em relação às funcionalidades e aos testes, pois as pessoas que vierem depois precisam entender como eles se relacionam.
+
+Portanto, em relação aos outros métodos, no BDD se faz muito necessária a construção da documentação sobre todos os métodos e processos de desenvolvimento do aplicativo.
+
+Custoso
+
+É um método voltado para aplicativos grandes e que demanda um conhecimento profundo sobre funcionalidades e testes — pessoas que possuem essas características são mais custosas, pois como sabemos, especialistas custam mais no mercado.
+
+Além disso, as equipes grandes funcionam muito bem neste modelo — e obviamente, o custo delas é maior.
+
+Aplicando o BDD no Flutter
+Sabemos qual é a feature: um clique no cliente exibirá o e-mail. Como aplicaríamos isso no BDD?
+
+Observação: O nosso aplicativo é muito simples e pequeno, pois focamos na didática. Normalmente, os aplicativos que usam este método são bem maiores.
+Primeiro, implementaremos a funcionalidade: como codaremos essa feature? Depois, focaremos no teste: o que devemos e o que não devemos testar? O que não poderá faltar nesse teste?
+
+Por fim, nos preocupamos com o design: como será o layout e a experiência da pessoa usuária?
+
+Veremos no código abordado anteriormente alguns detalhes sobre a diferença entre o TDD e o BDD.
+
+InkWell(
+    onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Email: $(list.clients[index].email)')));
+    }
+    child: ListTile(...));
+COPIAR CÓDIGO
+Neste caso, a funcionalidade não mudou. Temos o nosso InkWell(), que é algo parecido com um detector de gestos, só que mais robusto que possui animações. Dentro dele implementamos um ListTile().
+
+Quando clicamos na pessoa cliente, ele abrirá um ScaffoldMessenger que exibirá um SnackBar com o texto do e-mail daquela pessoa específica.
+
+Importante: Temos que buscar a eficiência do comportamento da feature e entender qual é a melhor forma de aplicá-la.
+Já o teste que será implementado possuirá mudanças e será um pouco diferente do teste produzido no TDD, pois aqui já podemos visualizar antecipadamente o que é importante procurar no teste.
+
+Neste caso, alteramos a forma como descrevemos o teste, deixando-o mais definido. Isso ocorre pois já sabemos exatamente o que o teste deverá fazer.
+
+//O teste deve apertar no ListTile do Cliente e ver a informação do email
+await tester.tap(find.text('DandaraBot (Ferro)'));
+
+await tester.pumpAndSettle();
+
+expect(find.text('Email: dandara@bot.com.br'), findsOneWidget);
+COPIAR CÓDIGO
+Continuamos pedindo para o teste dar um clique no texto DandaraBot. Já no expect, após rodarmos todo o processo, buscamos especificamente o texto Email: dandara@bot.com.br ao invés de um ScaffoldMessage.
+
+Começamos a ter mais detalhes na primeira versão do nosso teste, evitando que voltemos excessivamente para corrigi-lo. Isso poupa trabalho e garante uma maior qualidade.
+
+Importante: O teste deve ter clareza — ou seja, deve evitar a redundância e a linguagem deve ser clara para que qualquer pessoa entenda a sua função.
+
+@@08
+Aprendendo com os erros
+
+Tomando seu café em um evento de tecnologia, você ouviu situações que ocorreram em empresas.
+Imagem de uma galinha servindo café com os dizeres “fofoca?” em cima dela, e ao lado, imagem de um pintinho em cima de uma xícara de café com a palavra “aceito” ao lado dele.
+
+Alguns devs estavam conversando sobre como evitar erros em um projeto:
+
+— Nossa, Roberta! O pessoal do projeto Digitalbanco focou no layout e telas, mas não pensaram na organização do código. Foram “codando” sem planejar; quando adicionaram uma funcionalidade de empréstimo, o aplicativo quebrou. Foi caótico resolver o código, sorte que a gente fazia testes!
+— É, Enzo! Foi parecido na Foodzin. Os gestores solicitaram a entrega rápida duma feature de gorjeta. Só que eles pediram que a gente evitasse os testes por enquanto… por motivos de tempo, né? Daí, quando a atualização do projeto foi ao ar, diversas pessoas reclamaram de bugs e travamentos de tela!
+Selecione a alternativa adequada:
+
+Se testes são essenciais à qualidade do projeto, uma forma eficaz de evitar erros seria utilizar a metodologia DDD em que construímos testes antes de telas e funcionalidades e já pegamos, de antemão, qualquer inconsistência no projeto.
+ 
+Alternativa correta
+Dado que os problemas no projeto Digitalbanco foram causados por falta de planejamento da estrutura do código, a metodologia que teria evitado o cenário caótico é a BDD, pois essa metodologia aposta em criar os alicerces de base do código.
+ 
+Isso mesmo! O BDD se baseia em estruturar o comportamento da aplicação primeiro, e dado a situação da empresa, vimos que é necessário utilizar uma metodologia mais voltada para o comportamento e que anda junto com os testes que a Digitalbanco já realiza noramlmente.
+Alternativa correta
+Dado que os problemas no projeto Digitalbanco foram causados por falta de planejamento da estrutura do código, uma solução teria sido a metodologia TDD, pois ela aposta em criar os alicerces de base do código.
+ 
+Alternativa correta
+Se testes são essenciais à qualidade do projeto, uma forma de evitar erros seria a metodologia TDD, em que construímos testes antes de telas e funcionalidades e pegamos, de antemão, inconsistências no projeto.
+ 
+Corretíssimo! Com projetos já estruturados, o ideal para garantir a qualidade da aplicação é utilizando testes, ou seja, aplicando o método TDD.
+
+@@09
+Faça como eu fiz
+
+Chegou a sua vez de aplicar o que vimos!
+Dessa vez, a sua missão agora é analisar os seus projetos pessoais, os aplicativos que você já fez até aqui:
+
+Busque no seu portfólio cada um dos seus projetos;
+Identifique pontos de melhoria na produção desses projetos;
+Qual seria o melhor método para produzir cada um dos aplicativos?
+Será que se você tivesse usado algum método eu teria tido menos dificuldade?
+Identifique testes necessários e testes desnecessários em cada um dos seus projetos.
+Compartilhe suas respostas com a gente lá no Discord!
+
+Partiu?
+
+O objetivo desta atividade é aumentar o seu senso critico para com projetos distintos, e verificar na sua realidade qual método é melhor para qual projeto que você produziu. Assim ao encarar um novo desafio o seu novo senso critico vai lhe ajudar a evitar dificuldades que se repetem sem metodologia.
+
+@@10
+Projeto final
+
+Você pode baixar ou acessar o código-fonte do projeto final.
+Aproveite para explorá-lo e revisar pontos importantes do curso.
+
+Bons estudos!
+
+https://github.com/alura-cursos/alura_flutter_intermediario_curso_1/archive/refs/heads/Aula_3.zip
+
+https://github.com/alura-cursos/alura_flutter_intermediario_curso_1/tree/Aula_3
+
+@@11
+O que aprendemos?
+
+Nesta aula, você aprendeu a:
+Identificar pontos faltantes nos testes:
+Uma vez que concluímos nossos testes, cabe averiguar se não deixamos nada para trás, e se deixamos, qual a relevância dos testes não realizados.
+Conhecer a metodologia DDD:
+Começamos a explorar metodologias de desenvolvimento e como elas podem nos orientar enquanto criamos um aplicativo em Flutter. No caso do DDD (Domain Driven Design), vimos que ele é orientado ao Domínio, ou seja, é capaz de unir as informações e funcionamentos do projeto em uma única linguagem e dar mais atenção ao objetivo do produto.
+Entender a metodologia TDD:
+Continuando nossos estudos sobre desenvolvimento de softwares em Flutter, verificamos o TDD (Test Driven Development) que é orientado a testes e capaz de produzir aplicações e features sem diminuir a qualidade do projeto, focando em garantir a qualidade em primeiro lugar.
+Saber qual é a metodologia BDD:
+Finalizando nossos estudos sobre metodologias de desenvolvimento de softwares em Flutter, aprendemos sobre o BDD (Behavior Driven Development) que é um “evolução” do TDD, capaz de produzir aplicações seguindo uma orientação aos comportamentos do projeto, alinhadamente com os testes, focando em garantir a funcionalidade e a organização do código em primeiro lugar.
+
+@@12
+Recados finais
+
+Parabéns, você chegou ao fim do nosso curso! Tenho certeza de que esse mergulho foi de muito aprendizado.
+Após os créditos finais do curso, você será redirecionado para uma tela na qual poderá deixar seu feedback e avaliação do curso. Sua opinião é muito importante para nós.
+
+Aproveite para conhecer a nossa comunidade no Discord da Alura e se conectar com outras pessoas com quem você pode conversar, aprender e aumentar seu networking.
+
+Continue mergulhando com a gente!
+
+https://discord.com/invite/QeBdgAjXnn
+
+@@13
+Conclusão
+
+Parabéns por concluir este curso de Flutter! Revisaremos tudo o que foi visto para relembrar e entender o quanto evoluímos em nossa jornada.
+Começamos vendo os conceitos de Testes de unidade e de widgets. Entramos de cabeça com a Dandara em sua missão de testar um aplicativo inteiro, garantindo a sua qualidade de ponta a ponta.
+
+Ao aplicar os testes de unidade e de widgets, Dandara percebeu que eles por si só não garantiam a qualidade necessária. Afinal, algumas funcionalidades eram dependentes entre si. Para integrar os testes, aprendemos a implementar os Testes de integração, nos quais definimos nossas metas e passos, entendendo o que precisava e o que não precisava ser testado.
+
+A partir disso, partimos para a prática. Testamos tudo: telas, botões, funcionalidades. Criamos novos tipos e clientes.
+
+Verificamos que, ao criar um novo cliente, o novo tipo estava presente — ou seja, a integração se provou correta.
+
+Revisitamos os conceitos do Finder para relembrar quando devemos utilizá-lo corretamente. Utilizamos o find.byKey() para solucionar o problema de um widget que aparecia duas vezes no nosso aplicativo.
+
+Entendemos os conceitos de Gerenciamento de estado e como garantir a qualidade do gerenciamento das informações. Testamos o Provider e abordamos as formas com as quais os testes podem alterar levemente o projeto principal, levando em conta que precisamos tomar cuidado com essas alterações.
+
+Criamos novos contextos e também verificamos os testes que faltaram, assegurando que eles não eram tão necessários assim. No caso do nosso curso, deixamos passar alguns testes por falta de tempo.
+
+Por fim, aprendemos e visualizamos três novos tipos de desenvolvimento de software que são muito importantes quando pensamos na qualidade de um projeto: DDD, TDD e BDD. Afinal, estruturar a forma com a qual implementamos novas features é de extrema importância para garantir a qualidade do produto — neste caso, um aplicativo ou projeto.
+
+É importante lembrar que não existe um tipo de desenvolvimento de software melhor que o outro — todos são bons e possuem seu próprio tempo e motivo para existir. Nos casos em que não precisamos nos preocupar tanto com a qualidade, use um modelo específico; quando precisamos nos preocupar com testes, o TDD é maravilhoso; se o aplicativo é muito grande, o BDD é ideal para esses casos.
+
+Aprendemos os três tipos para desenvolvermos o nosso senso crítico e sermos capazes de decidir qual o melhor método para utilizar em cada situação, e também para entendermos qual o método que utilizamos instintivamente. Entendemos também as falhas e vantagens de cada um deles.
+
+Neste curso, vimos muita coisa. Meus parabéns e continue sempre evoluindo.
+
+Agradecemos a sua presença, e esperamos você no próximo curso!
